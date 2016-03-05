@@ -1,6 +1,7 @@
 language: php
 
 php:
+  - 5.3
   - 5.4
   - 5.5
   - 5.6
@@ -19,27 +20,48 @@ matrix:
     - php:
       - 7.0
       - hhvm
-  fast_finish: true
+  exclude:
+    - php: 5.3
+      env: SYMFONY_VERSION="3.0.*" DECODA_VERSION="6.0.*"
+    - php: 5.3
+      env: SYMFONY_VERSION="3.0.*" DECODA_VERSION="6.*"
+    - php: 5.3
+      env: SYMFONY_VERSION="3.*" DECODA_VERSION="6.0.*"
+    - php: 5.3
+      env: SYMFONY_VERSION="3.*" DECODA_VERSION="6.*"
+    - php: 5.4
+      env: SYMFONY_VERSION="3.0.*" DECODA_VERSION="6.0.*"
+    - php: 5.4
+      env: SYMFONY_VERSION="3.0.*" DECODA_VERSION="6.*"
+    - php: 5.4
+      env: SYMFONY_VERSION="3.*" DECODA_VERSION="6.0.*"
+    - php: 5.4
+      env: SYMFONY_VERSION="3.*" DECODA_VERSION="6.*"
 
 env:
   - SYMFONY_VERSION="2.1.*" DECODA_VERSION="6.0.*"
   - SYMFONY_VERSION="2.1.*" DECODA_VERSION="6.*"
   - SYMFONY_VERSION="2.*" DECODA_VERSION="6.0.*"
   - SYMFONY_VERSION="2.*" DECODA_VERSION="6.*"
+  - SYMFONY_VERSION="3.0.*" DECODA_VERSION="6.0.*"
+  - SYMFONY_VERSION="3.0.*" DECODA_VERSION="6.*"
+  - SYMFONY_VERSION="3.*" DECODA_VERSION="6.0.*"
+  - SYMFONY_VERSION="3.*" DECODA_VERSION="6.*"
 
 before_install:
   - composer self-update
   - if [ "${TRAVIS_PHP_VERSION}" != "hhvm" ]; then echo "memory_limit = -1" >> ~/.phpenv/versions/$(phpenv version-name)/etc/conf.d/travis.ini; fi
-  - composer require symfony/symfony:"${SYMFONY_VERSION}" mjohnson/decoda:"${DECODA_VERSION}" --dev --prefer-source
 
-install: composer update --no-interaction
+install:
+  - composer require symfony/symfony:"${SYMFONY_VERSION}" mjohnson/decoda:"${DECODA_VERSION}" --dev --prefer-source -n
 
 script: phpunit --coverage-clover=clover.xml
 
 after_script:
   - wget https://scrutinizer-ci.com/ocular.phar
   - php ocular.phar code-coverage:upload --format=php-clover clover.xml
-  - php vendor/bin/coveralls -v
+  - wget https://github.com/satooshi/php-coveralls/releases/download/v1.0.1/coveralls.phar
+  - php coveralls.phar -v
 
 notifications:
   email:
