@@ -4,6 +4,7 @@ namespace FM\BbcodeBundle\Decoda;
 
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\HttpKernel\Config\FileLocator;
+use Symfony\Component\Translation\TranslatorInterface;
 use Decoda\Engine\PhpEngine;
 use Decoda\Loader\FileLoader;
 use Decoda\Filter;
@@ -64,12 +65,18 @@ class DecodaManager
     private $preConfiguredDecoda;
 
     /**
+     * @var TranslatorInterface|null
+     */
+    private $translator;
+
+    /**
      * @param array $options An array of options
      */
     public function __construct(ContainerInterface $container, FileLocator $locator, array $options = array())
     {
         $this->container = $container;
         $this->locator   = $locator;
+        $this->setTranslator($container->get('translator', ContainerInterface::NULL_ON_INVALID_REFERENCE));
 
         $this->setOptions($options);
     }
@@ -490,13 +497,18 @@ class DecodaManager
     private function getLocale()
     {
         if (null === $this->locale) {
-            if ($this->container->isScopeActive('request') && $this->container->has('request')) {
-                $this->locale = $this->container->get('request')->getLocale();
-            } else {
+            $this->locale = null !== $this->translator ? $this->translator->getLocale() : null;
+
+            if (null === $this->locale) {
                 $this->locale = $this->options['default_locale'];
             }
         }
 
         return $this->locale;
+    }
+
+    private function setTranslator(TranslatorInterface $translator = null)
+    {
+        $this->translator = $translator;
     }
 }
